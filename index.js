@@ -148,6 +148,16 @@ async function run() {
 
 
           })
+
+          app.get('/property/:email',async (req,res) => {
+            const email = req.params.email 
+            const query = {agentEmail:email}
+            const result = await propetyCollection.find(query).toArray()
+            res.send(result)
+
+
+
+          })
   
 
 

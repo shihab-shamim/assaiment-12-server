@@ -135,7 +135,7 @@ async function run() {
 
           // property management api 
 
-          app.post('/property',async (req,res) =>{
+          app.post('/property',verifyToken,async (req,res) =>{
                const propertyInfo = req.body 
                console.log( 'property',propertyInfo)
               //  const info = {
@@ -149,7 +149,7 @@ async function run() {
 
           })
 
-          app.get('/property/:email',async (req,res) => {
+          app.get('/property/:email',verifyToken,async (req,res) => {
             const email = req.params.email 
             const query = {agentEmail:email}
             const result = await propetyCollection.find(query).toArray()
@@ -159,11 +159,18 @@ async function run() {
 
           })
           
-          app.delete('/property/:id',async(req,res)=>{
+          app.delete('/property/:id',verifyToken,async(req,res)=>{
             const id =req.params.id 
             const query = {_id : new ObjectId(id)}
             const result = await propetyCollection.deleteOne(query)
             res.send(result)
+          })
+          app.get('/property/:id',verifyToken,async(req,res)=>{
+            const id =req.params.id
+            const query = {_id : new ObjectId(id)}
+            const result = await propetyCollection.findOne(query)
+            res.send(result)
+            
           })
 
 

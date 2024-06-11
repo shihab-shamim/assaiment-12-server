@@ -32,6 +32,7 @@ async function run() {
     // Connect the client to the server (optional starting in v4.7)
     await client.connect();
     const userCollection = client.db("finallShort").collection("users");
+    const propetyCollection =client.db("finallShort").collection("property");
 
     // middle ware 
     const verifyToken= (req,res,next)=>{
@@ -75,6 +76,8 @@ async function run() {
         res.send({token})
   
       })
+      
+      // user management api 
     
         app.post('/users',async (req,res)=>{
             const user =req.body
@@ -130,6 +133,21 @@ async function run() {
             res.send(result)
           })
 
+          // property management api 
+
+          app.post('/property',async (req,res) =>{
+               const propertyInfo = req.body 
+               console.log( 'property',propertyInfo)
+              //  const info = {
+               
+              //  }
+              //  console.log('info',info)
+
+            const result = await propetyCollection.insertOne(propertyInfo)
+            res.send(result)
+
+
+          })
   
 
 

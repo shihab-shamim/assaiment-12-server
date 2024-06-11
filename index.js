@@ -8,7 +8,9 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173'
+}));
 app.use(express.json());
 
 // Construct the MongoDB URI from environment variables
@@ -93,13 +95,13 @@ async function run() {
             res.send(result)
             
           })
-          app.get('/users/:id',async (req,res)=>{
+          app.get('/users/:id',verifyToken,async (req,res)=>{
             const id =req.params.id
             const query = {_id: new ObjectId(id)}
             const result = await userCollection.findOne(query)
             res.send(result)
           })
-          app.patch('/users/:id',async(req,res)=>{
+          app.patch('/users/:id',verifyToken,async(req,res)=>{
             const id =req.params.id
             const {role}=req.body 
             console.log(role)
@@ -114,10 +116,17 @@ async function run() {
             res.send(result)
 
           })
-          app.delete('/users/:id',async (req,res) => {
+          app.delete('/users/:id',verifyToken,async (req,res) => {
             const id =req.params.id 
             const query ={_id : new ObjectId(id)}
             const result = await userCollection.deleteOne(query)
+            res.send(result)
+          })
+          app.get('/user/:email',verifyToken,async(req,res)=>{
+            const email =req.params.email
+            const query ={email:email}
+            // console.log(email)
+            const result = await userCollection.findOne(query)
             res.send(result)
           })
 

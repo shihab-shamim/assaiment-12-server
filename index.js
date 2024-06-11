@@ -33,6 +33,7 @@ async function run() {
     await client.connect();
     const userCollection = client.db("finallShort").collection("users");
     const propetyCollection =client.db("finallShort").collection("property");
+    const verifyPropertyCollection =client.db("finallShort").collection("verifyProperty");
 
     // middle ware 
     const verifyToken= (req,res,next)=>{
@@ -133,7 +134,7 @@ async function run() {
             res.send(result)
           })
 
-          // property management api 
+          // property management api  agent 
 
           app.post('/property',verifyToken,async (req,res) =>{
                const propertyInfo = req.body 
@@ -148,16 +149,15 @@ async function run() {
 
 
           })
+        
 
           app.get('/property/:email',verifyToken,async (req,res) => {
             const email = req.params.email 
             const query = {agentEmail:email}
             const result = await propetyCollection.find(query).toArray()
             res.send(result)
-
-
-
           })
+         
           
           app.delete('/property/:id',verifyToken,async(req,res)=>{
             const id =req.params.id 
@@ -165,13 +165,31 @@ async function run() {
             const result = await propetyCollection.deleteOne(query)
             res.send(result)
           })
-          app.get('/property/:id',verifyToken,async(req,res)=>{
-            const id =req.params.id
-            const query = {_id : new ObjectId(id)}
+
+          // TODO: is not work help by support season
+          app.get('/property/:id',async (req,res) => {
+            const id = req.params.id
+            const query ={_id: new ObjectId(id)}
             const result = await propetyCollection.findOne(query)
             res.send(result)
-            
           })
+          
+        
+        // admin related api  
+        app.get('/property',verifyToken,async(req,res)=>{
+
+          const result =await propetyCollection.find().toArray()
+          res.send(result)
+        })
+        
+        app.post('/verifyProperty',async(req,res)=>{
+          const verifyItems=req.body
+
+          // const result =await verifyPropertyCollection.insertOne()
+          // res.send(result)
+
+        })
+          
 
 
 

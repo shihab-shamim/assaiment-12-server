@@ -8,10 +8,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:5173'
-}));
+// app.use(cors({
+//   origin: ['http://localhost:5173','https://assaiment-12.web.app']
+// }));
 app.use(express.json());
+app.use(cors())
 
 // Construct the MongoDB URI from environment variables
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.u53e1so.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -30,10 +31,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server (optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const userCollection = client.db("finallShort").collection("users");
     const propetyCollection =client.db("finallShort").collection("property");
     const verifyPropertyCollection =client.db("finallShort").collection("verifyProperty");
+    const wishlistCollection=client.db('finallShort').collection("wishlist")
+    const reviwerCollection=client.db('finallShort').collection('review')
 
     // middle ware 
     const verifyToken= (req,res,next)=>{
@@ -219,23 +222,76 @@ async function run() {
           
         })
         
-        app.post('/verifyProperty',async(req,res)=>{
+        app.post('/verifyProperty',verifyToken,async(req,res)=>{
           const verifyItems=req.body
+          console.log(verifyItems)
 
           const result =await verifyPropertyCollection.insertOne(verifyItems)
           res.send(result)
 
         })
           
-        //  agent aPI 
-      
+       // user related api  
+       app.get('/allProperty',async(req,res)=>{
+        const result = await verifyPropertyCollection.find().toArray()
+        res.send(result)
+
+       })
+       app.get('/details/:id',verifyToken,async (req,res) =>{
+        const id =req.params.id
+        const query = {_id: new ObjectId(id)}
+
+        const result = await verifyPropertyCollection.findOne(query)
+        res.send(result)
+
+
+
+       })
+
+       app.post('/wishlist',verifyToken,async(req,res)=>{
+          const wishlist=req.body 
+          const result = await wishlistCollection.insertOne(wishlist)
+          res.send(result)
+
+
+       })
+       app.post('/review',verifyToken,async(req,res)=>{
+        const reviewInfo = req.body 
+        const result = await reviwerCollection.insertOne(reviewInfo)
+        res.send(result)
+
+       })
+       app.get('/review/:id',async (req,res) =>{
+        const id=req.params.id
+        const filter = {reviewId:id}
+        const result =await reviwerCollection.find().toArray()
+        res.send(result)
+
+       })
+       
+       app.get('/wishlist/:email' , async (req,res)=>{
+        const email = req.params.email
+        const query = {userEmail:email}
+        const result = await wishlistCollection.find(query).toArray()
+        res.send(result)
+
+
+       })
+
+       app.delete('/wishlist/:id' ,verifyToken,async (req,res)=>{
+        const id =req.params.id
+        const query = {_id : new ObjectId(id)}
+        const result = await wishlistCollection.deleteOne(query)
+        res.send(result)
+
+       })
 
 
 
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (err) {
     console.error('Failed to connect to MongoDB:', err);

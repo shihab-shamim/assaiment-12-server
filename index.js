@@ -134,7 +134,7 @@ async function run() {
             res.send(result)
           })
 
-          // property management api  agent 
+          // agent  related api  
 
           app.post('/property',verifyToken,async (req,res) =>{
                const propertyInfo = req.body 
@@ -167,13 +167,15 @@ async function run() {
           })
 
           // TODO: is not work help by support season
-          app.get('/property/:id',async (req,res) => {
+        
+          app.get('/prop/:id',async (req,res) => {
             const id = req.params.id
+            
             const query ={_id: new ObjectId(id)}
+            console.log(id)
             const result = await propetyCollection.findOne(query)
             res.send(result)
           })
-          
         
         // admin related api  
         app.get('/property',verifyToken,async(req,res)=>{
@@ -181,16 +183,28 @@ async function run() {
           const result =await propetyCollection.find().toArray()
           res.send(result)
         })
+        app.patch('/property/:id',async(req,res)=>{
+          const status =req.body
+          const id =req.params.id
+          const filter ={_id:new ObjectId(id)}
+          const updateOne={
+            $set:status
+          }
+          const result =await propetyCollection.updateOne(filter,updateOne)
+          res.send(result)
+          
+        })
         
         app.post('/verifyProperty',async(req,res)=>{
           const verifyItems=req.body
 
-          // const result =await verifyPropertyCollection.insertOne()
-          // res.send(result)
+          const result =await verifyPropertyCollection.insertOne(verifyItems)
+          res.send(result)
 
         })
           
-
+        //  agent aPI 
+      
 
 
 

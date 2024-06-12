@@ -172,9 +172,33 @@ async function run() {
             const id = req.params.id
             
             const query ={_id: new ObjectId(id)}
-            console.log(id)
+            
             const result = await propetyCollection.findOne(query)
             res.send(result)
+          })
+          app.put('/property/:id',async (req,res)=>{
+            const id =req.params.id
+            const filter = {_id : new ObjectId(id)}
+            const updatedInfo =req.body
+            console.log(updatedInfo)
+            const option = {upsert:true}
+            const updatedDoc ={
+              $set:{
+                title:updatedInfo.title,
+                location:updatedInfo.location,
+                minPrice:updatedInfo.minPrice,
+                maxPrice:updatedInfo.maxPrice,
+                agentEmail:updatedInfo.agentEmail,
+                agentName:updatedInfo.agentName,
+                image:updatedInfo.image
+
+              }
+            }
+            const result = await propetyCollection.updateOne(filter,updatedDoc,option)
+            res.send(result)
+
+
+
           })
         
         // admin related api  

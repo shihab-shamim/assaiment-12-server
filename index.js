@@ -37,6 +37,8 @@ async function run() {
     const verifyPropertyCollection =client.db("finallShort").collection("verifyProperty");
     const wishlistCollection=client.db('finallShort').collection("wishlist")
     const reviwerCollection=client.db('finallShort').collection('review')
+    const boughtCollection=client.db('finallShort').collection('bought')
+    const advertisementCollction=client.db('finallShort').collection('advertise')
 
     // middle ware 
     const verifyToken= (req,res,next)=>{
@@ -203,6 +205,27 @@ async function run() {
 
 
           })
+          app.get('/request/:email',verifyToken,async(req,res)=>{
+            const email=req.params.email
+            const query = {agentEmail:email}
+            const result  =  await boughtCollection.find(query).toArray()
+            res.send(result)
+
+          })
+          app.patch('/accept/:id',async (req,res)=>{
+            const id =req.params.id
+            const {status} = req.body
+            const filter ={_id : new ObjectId(id)}
+            const updateDoc={
+              $set:{
+                status:status
+              }
+            }
+            const result = await boughtCollection.updateOne(filter,updateDoc)
+            res.send(result)
+
+
+          })
         
         // admin related api  
         app.get('/property',verifyToken,async(req,res)=>{
@@ -230,10 +253,58 @@ async function run() {
           res.send(result)
 
         })
+        app.get('/advertise',verifyToken,async (req,res)=>{
+           const result = await verifyPropertyCollection.find().toArray()
+           res.send(result)
+
+        })
+        app.post('/advertisement',verifyToken,async(req,res)=>{
+          const advertisement=req.body
+          const result = await advertisementCollction.insertOne(advertisement)
+          res.send(result)
+
+
+        })
+        app.get('/homeAdvertise',async (req,res)=>{
+
+           const result =await advertisementCollction.find().limit(4).toArray()
+           res.send(result)
+
+        })
+        app.get('/manageReview',verifyToken,async (req,res)=>{
+          const result = await reviwerCollection.find().toArray()
+          res.send(result)
+
+        })
+        app.delete('/manageReview/:id',verifyToken,async(req,res)=>{
+          const id = req.params.id 
+          const query = {_id :  new ObjectId(id)}
+          const result = await reviwerCollection.deleteOne(query)
+          res.send(result)
+
+        })
+
+        app.delete('/fraudDelete/:email',verifyToken,async(req,res)=>{
+          const email = req.params.email
+          const query = {agentEmail:email}
+          const result = await verifyPropertyCollection.deleteMany(query)
+          res.send(result)
+
+
+        })
           
        // user related api  
        app.get('/allProperty',async(req,res)=>{
-        const result = await verifyPropertyCollection.find().toArray()
+        const filter=req.query
+        
+      
+        const query = {location:{$regex:filter.search,$options:'i'}}
+        const option = {
+          sort:{
+            minPrice: filter.sort === 'asc' ? 1 :-1
+          }
+        }
+        const result = await verifyPropertyCollection.find(query,option).toArray()
         res.send(result)
 
        })
@@ -264,10 +335,12 @@ async function run() {
        app.get('/review/:id',async (req,res) =>{
         const id=req.params.id
         const filter = {reviewId:id}
-        const result =await reviwerCollection.find().toArray()
+        const result =await reviwerCollection.find(filter).toArray()
         res.send(result)
 
        })
+       
+      
        
        app.get('/wishlist/:email' , async (req,res)=>{
         const email = req.params.email
@@ -277,6 +350,8 @@ async function run() {
 
 
        })
+       
+      
 
        app.delete('/wishlist/:id' ,verifyToken,async (req,res)=>{
         const id =req.params.id
@@ -285,6 +360,60 @@ async function run() {
         res.send(result)
 
        })
+
+       app.get('/offer/:id',async(req,res)=>{
+        const id=req.params.id
+        const query={_id : new ObjectId(id)}
+        const result = await wishlistCollection.findOne(query)
+        res.send(result)
+
+       })
+       app.post('/bought',verifyToken,async(req,res)=>{
+        const bouhgtInfo = req.body
+        const result = await boughtCollection.insertOne(bouhgtInfo)
+        res.send(result)
+
+       })
+       app.get('/myReview/:email',verifyToken,async(req,res)=>{
+        const email=req.params.email
+        const query ={reviewerEmail:email}
+        const result =await reviwerCollection.find(query).toArray()
+        res.send(result)
+       })
+       app.delete('/reviewDelete/:id',verifyToken,async(req,res)=>{
+        const id =req.params.id 
+        const query ={_id : new ObjectId(id)}
+        const result = await reviwerCollection.deleteOne(query)
+        res.send(result)
+
+       })
+
+       app.get('/myBought/:email',async(req,res)=>{
+        const email=req.params.email
+        const query = {buyerEmail:email}
+        const result = await boughtCollection.find(query).toArray()
+        res.send(result)
+
+       })
+
+       app.get('/adertis/:id',verifyToken,async(req,res)=>{
+        const id = req.params.id
+        const query = {_id : new ObjectId(id)}
+        const result = await advertisementCollction.findOne(query)
+        res.send(result)
+
+       })
+
+       app.get('/latestReview',async(req,res)=>{
+
+        const result  = await reviwerCollection.find().sort({ date: -1 }).limit(3).toArray()
+        res.send(result)
+        
+        
+       })
+      
+      
+       
 
 
 
